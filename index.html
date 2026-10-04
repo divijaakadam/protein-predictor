@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Protein Property Predictor</title>
+<style>
+:root{--bg:#f6f9fc;--card:#fff;--ink:#1d2a38;--mute:#5b6b7b;--brand:#1f4e79;--accent:#e07b00;--line:#d5e1ee;--good:#e6f4ea;--bad:#fdecea;--hero:#1f4e79;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1720;--card:#17222e;--ink:#e6edf4;--mute:#9fb0c1;--brand:#7fb3e6;--accent:#ffa134;--line:#2a3a4b;--good:#173626;--bad:#3a1f1f;--hero:#14324f}}
+:root[data-theme="dark"]{--bg:#0f1720;--card:#17222e;--ink:#e6edf4;--mute:#9fb0c1;--brand:#7fb3e6;--accent:#ffa134;--line:#2a3a4b;--good:#173626;--bad:#3a1f1f;--hero:#14324f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:0 18px}
+header.hero{background:var(--hero);color:#fff;padding:48px 0 40px}
+header.hero h1{margin:0 0 8px;font-size:clamp(26px,5vw,40px);line-height:1.15}
+header.hero p{margin:0 0 20px;color:#d6e6f6;font-size:18px;max-width:640px}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{background:rgba(255,255,255,.14);border-radius:999px;padding:6px 14px;font-size:14px}
+section{padding:34px 0 6px}
+h2{color:var(--brand);margin:0 0 12px;font-size:24px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h3{margin:0 0 6px;font-size:16px;color:var(--brand)}
+.card p{margin:0;color:var(--mute);font-size:15px}
+.num{display:inline-block;background:var(--accent);color:#fff;border-radius:50%;width:26px;height:26px;text-align:center;line-height:26px;font-weight:700;font-size:14px;margin-bottom:8px}
+.bars{display:grid;gap:12px}
+.bar-row{display:grid;grid-template-columns:150px 1fr 48px;gap:10px;align-items:center;font-size:14px}
+.track{background:var(--line);border-radius:6px;height:16px;overflow:hidden}
+.fill{height:100%;border-radius:6px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left}
+th{background:var(--card);color:var(--brand)}
+.two{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.good{background:var(--good)}.bad{background:var(--bad)}
+.big{font-size:22px;font-weight:700;letter-spacing:2px;margin:0 0 6px}
+textarea{width:100%;min-height:90px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:14px/1.4 ui-monospace,Consolas,monospace}
+button{background:var(--brand);color:#fff;border:0;border-radius:8px;padding:10px 18px;font-size:15px;cursor:pointer;margin:8px 8px 0 0}
+button.alt{background:transparent;color:var(--brand);border:1px solid var(--brand)}
+button:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#out{margin-top:14px}
+.ab{display:grid;grid-template-columns:22px 1fr 52px;gap:6px;align-items:center;font:13px ui-monospace,Consolas,monospace;margin:2px 0}
+.ab .t{background:var(--line);height:10px;border-radius:5px;overflow:hidden}
+.ab .f{height:100%;background:var(--brand)}
+.note{font-size:14px;color:var(--mute)}
+.result{padding:14px;border-radius:10px;border:1px solid var(--line);background:var(--card);margin-bottom:10px}
+details{margin-top:12px}
+summary{cursor:pointer;color:var(--brand);font-weight:600}
+pre{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;overflow-x:auto;font-size:13px}
+footer{padding:30px 0 40px;color:var(--mute);font-size:14px}
+@media (max-width:520px){.bar-row{grid-template-columns:110px 1fr 44px}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <h1>AI Protein Property Predictor</h1>
+  <p>Can a computer tell if a protein is a membrane protein just by reading its letters?</p>
+  <div class="chips"><span class="chip">17,342 human proteins</span><span class="chip">21 simple features</span><span class="chip">77.5% to 79% accuracy</span><span class="chip">Project B21 | FAIR-AI-21</span></div>
+</div></header>
+
+<main class="wrap">
+<section>
+  <h2>The idea in simple words</h2>
+  <div class="two">
+    <div class="card"><h3>A protein is a word</h3><p>It is written with a 20-letter alphabet called amino acids, for example MKLLVVIAL. The order of letters decides its shape and job.</p></div>
+    <div class="card"><h3>The membrane is oily</h3><p>The skin of a cell is oily. A protein living there needs oil-loving (hydrophobic) letters such as L, I, V and F, like a raincoat for standing in the rain.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>How we built it</h2>
+  <div class="grid">
+    <div class="card"><span class="num">1</span><h3>Get data</h3><p>Reviewed human proteins from UniProt.</p></div>
+    <div class="card"><span class="num">2</span><h3>Make labels</h3><p>Membrane = 1 if the location text says "membrane", else 0.</p></div>
+    <div class="card"><span class="num">3</span><h3>Count letters</h3><p>20 amino acid fractions plus length.</p></div>
+    <div class="card"><span class="num">4</span><h3>Fair split</h3><p>Pfam families kept on one side, like a surprise exam.</p></div>
+    <div class="card"><span class="num">5</span><h3>Train and test</h3><p>Logistic Regression and Random Forest.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Results (test set, 4,486 proteins)</h2>
+  <div class="card">
+    <div class="bars" role="list" aria-label="Model scores">
+      <div class="bar-row" role="listitem"><span>LR accuracy</span><div class="track"><div class="fill" style="width:77.5%;background:var(--brand)"></div></div><b>0.775</b></div>
+      <div class="bar-row" role="listitem"><span>RF accuracy</span><div class="track"><div class="fill" style="width:79%;background:var(--brand)"></div></div><b>0.790</b></div>
+      <div class="bar-row" role="listitem"><span>LR F1 (membrane)</span><div class="track"><div class="fill" style="width:73.3%;background:var(--accent)"></div></div><b>0.733</b></div>
+      <div class="bar-row" role="listitem"><span>RF F1 (membrane)</span><div class="track"><div class="fill" style="width:72.1%;background:var(--accent)"></div></div><b>0.721</b></div>
+      <div class="bar-row" role="listitem"><span>Always guess "no"</span><div class="track"><div class="fill" style="width:57.6%;background:#9aa8b6"></div></div><b>0.576</b></div>
+    </div>
+    <p class="note">LR = Logistic Regression, RF = Random Forest. The last bar is a lazy model that always answers "not membrane". Ours beat it clearly, but they are far from perfect.</p>
+  </div>
+  <div class="scroll" style="margin-top:12px"><table>
+    <tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th></tr>
+    <tr><td>Logistic Regression</td><td>0.775</td><td>0.74</td><td>0.73</td><td>0.733</td></tr>
+    <tr><td>Random Forest</td><td>0.790</td><td>0.83</td><td>0.64</td><td>0.721</td></tr>
+  </table></div>
+  <p class="note">Precision, recall and F1 are for the membrane class.</p>
+</section>
+
+<section>
+  <h2>Which amino acids mattered?</h2>
+  <div class="two">
+    <div class="card good"><div class="big">V W L I F</div><p>Push towards <b>membrane</b>. Oil-loving letters that fit inside the oily membrane.</p></div>
+    <div class="card bad"><div class="big">K H R D Q</div><p>Push towards <b>not membrane</b>. Charged or water-loving letters.</p></div>
+  </div>
+  <p class="note">Direction comes from Logistic Regression. The model learned the same biology we expected.</p>
+</section>
+
+<section>
+  <h2>Honest findings</h2>
+  <div class="two">
+    <div class="card"><h3>Fair split check</h3><p>Random split F1 = 0.720, family split F1 = 0.721. No real difference here, probably because 21 simple features cannot memorise proteins (we did not test this).</p></div>
+    <div class="card"><h3>Limitations</h3><p>Labels come from a text search and are noisy. Letter order is ignored. Human proteins only. Models were not tuned.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Try it: analyze a protein sequence</h2>
+  <div class="card">
+    <label for="seq" class="note">Paste a protein sequence (letters only, or FASTA text):</label>
+    <textarea id="seq" spellcheck="false" placeholder="MKLLVVIAL..."></textarea>
+    <button id="go">Analyze</button><button id="ex" class="alt">Use an example</button>
+    <div id="out" aria-live="polite"></div>
+
+    <details>
+      <summary>Turn on the real prediction (use your trained model)</summary>
+      <p class="note">Without your model, this page only shows the numbers the model would see. To add your trained Logistic Regression, run this in your Colab notebook after training, then paste the printed text below.</p>
+<pre>import json
+sc, clf = lr[0], lr[-1]
+print(json.dumps({"mean": sc.mean_.tolist(), "scale": sc.scale_.tolist(),
+                  "coef": clf.coef_[0].tolist(), "intercept": float(clf.intercept_[0])}))</pre>
+      <textarea id="mj" spellcheck="false" placeholder='{"mean": [...], "scale": [...], "coef": [...], "intercept": ...}'></textarea>
+      <button id="load">Load model</button><span id="ms" class="note"></span>
+    </details>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">Data: UniProt Swiss-Prot (human, reviewed). Built with Python and scikit-learn. Team: [write names here]. This is a student project and its predictions can be wrong.</div></footer>
+
+<script>
+const AA="ACDEFGHIKLMNPQRSTVWY".split("");
+const HYD=new Set("LIVFAM".split(""));
+let model=null;
+const $=id=>document.getElementById(id);
+try{const s=localStorage.getItem("ppp_model");if(s){model=JSON.parse(s);$("ms").textContent=" Model loaded.";}}catch(e){}
+
+function clean(t){return t.split(/\r?\n/).filter(l=>!l.startsWith(">")).join("").toUpperCase().replace(/[^A-Z]/g,"");}
+function validModel(m){return m&&["mean","scale","coef"].every(k=>Array.isArray(m[k])&&m[k].length===21)&&typeof m.intercept==="number";}
+
+$("ex").onclick=()=>{$("seq").value="MKLLVVIALLVVIAGLLIVVLAAFLIVGLLLVIALKRSDE";analyze();};
+$("go").onclick=analyze;
+$("load").onclick=()=>{
+  try{const m=JSON.parse($("mj").value);
+    if(!validModel(m)){$("ms").textContent=" That does not look right. It needs mean, scale, coef (21 numbers each) and intercept.";return;}
+    model=m;$("ms").textContent=" Model loaded.";
+    try{localStorage.setItem("ppp_model",JSON.stringify(m));}catch(e){}
+    if($("seq").value.trim())analyze();
+  }catch(e){$("ms").textContent=" Could not read that text. Paste exactly what Colab printed.";}
+};
+
+function analyze(){
+  const raw=clean($("seq").value);
+  const out=$("out");
+  if(raw.length<10){out.innerHTML='<p class="note">Please paste a sequence with at least 10 letters.</p>';return;}
+  const seq=raw.split("").filter(c=>AA.includes(c));
+  const skipped=raw.length-seq.length, n=seq.length||1;
+  const frac=AA.map(a=>seq.filter(c=>c===a).length/n);
+  const hyd=seq.filter(c=>HYD.has(c)).length/n;
+  let html="";
+  if(model){
+    const x=frac.concat([seq.length]);
+    let z=model.intercept;
+    for(let i=0;i<21;i++)z+=((x[i]-model.mean[i])/model.scale[i])*model.coef[i];
+    const p=1/(1+Math.exp(-z));
+    html+=`<div class="result"><b>${p>=0.5?"Likely a membrane protein":"Likely NOT a membrane protein"}</b><br>Model score for membrane: ${(p*100).toFixed(1)}%<div class="note">Our model is only about 77% accurate overall, so treat this as a guess.</div></div>`;
+  }else{
+    html+='<div class="result note">Prediction is off. Load your trained model (see the box above) to turn it on.</div>';
+  }
+  html+=`<div class="result">Length: <b>${seq.length}</b> letters. Oil-loving share (L, I, V, F, A, M): <b>${(hyd*100).toFixed(0)}%</b>.${skipped?` ${skipped} unusual letters were ignored.`:""}</div>`;
+  const max=Math.max(...frac,0.01);
+  html+='<div>'+AA.map((a,i)=>`<div class="ab"><b>${a}</b><div class="t"><div class="f" style="width:${(frac[i]/max*100).toFixed(0)}%"></div></div><span>${(frac[i]*100).toFixed(1)}%</span></div>`).join("")+'</div>';
+  out.innerHTML=html;
+}
+</script>
+</body>
+</html>
